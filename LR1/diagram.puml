@@ -1,0 +1,153 @@
+@startuml ClinicManagementSystem
+
+hide circle
+skinparam linetype ortho
+skinparam roundcorner 5
+skinparam class {
+    BackgroundColor White
+    ArrowColor #2C3E50
+    BorderColor #2C3E50
+    HeaderBackgroundColor #ECF0F1
+}
+
+entity "Account" as Account {
+  * Id : UUID <<PK>>
+  --
+  * Email : VARCHAR(256) <<UQ>>
+  * PasswordHash : VARCHAR
+  PhoneNumber : VARCHAR(20) <<UQ>>
+  * Firstname : VARCHAR(50)
+  * Lastname : VARCHAR(50)
+  * Birthday : DATE
+  * Role : INT
+  PhotoId : UUID <<FK>>
+  * IsActive : BOOL
+}
+
+entity "Patient" as Patient {
+  * Id : UUID <<PK>>
+  --
+  * AccountId : UUID <<FK>> <<UQ>>
+  * IsActive : BOOL
+}
+
+entity "Doctor" as Doctor {
+  * Id : UUID <<PK>>
+  --
+  * AccountId : UUID <<FK>> <<UQ>>
+  * SpecializationId : UUID <<FK>>
+  * OfficeId : UUID <<FK>>
+  * CareerStartDate : DATE
+  * GapInMonths : SMALLINT
+  Degree : VARCHAR(30)
+  * IsActive : BOOL
+}
+
+entity "Administrator" as Administrator {
+  * Id : UUID <<PK>>
+  --
+  * AccountId : UUID <<FK>> <<UQ>>
+  * OfficeId : UUID <<FK>>
+  * CareerStartDate : DATE
+  * GapInMonths : SMALLINT
+  * IsActive : BOOL
+}
+
+entity "Office" as Office {
+  * Id : UUID <<PK>>
+  --
+  * Address : VARCHAR(256)
+  PhoneNumber : VARCHAR(20) <<UQ>>
+  PhotoId : UUID <<FK>>
+}
+
+entity "Photo" as Photo {
+  * Id : UUID <<PK>>
+  --
+  * Url : VARCHAR(500)
+}
+
+entity "Specialization" as Specialization {
+  * Id : UUID <<PK>>
+  --
+  * Name : VARCHAR(50) <<UQ>>
+}
+
+entity "ServiceCategory" as ServiceCategory {
+  * Id : UUID <<PK>>
+  --
+  * Name : VARCHAR(100) <<UQ>>
+  * Duration : INTERVAL
+}
+
+entity "Service" as Service {
+  * Id : UUID <<PK>>
+  --
+  * SpecializationId : UUID <<FK>>
+  * ServiceCategoryId : UUID <<FK>>
+  * Name : VARCHAR(100) <<UQ>>
+  * Price : NUMERIC(18, 2)
+  * IsActive : BOOL
+}
+
+entity "Appointment" as Appointment {
+  * Id : UUID <<PK>>
+  --
+  * DoctorId : UUID <<FK>>
+  * PatientId : UUID <<FK>>
+  * ServiceId : UUID <<FK>>
+  * Date : DATE
+  * Time : TIME
+  * IsApproved : BOOL
+}
+
+entity "Result" as Result {
+  * Id : UUID <<PK>>
+  --
+  * AppointmentId : UUID <<FK>> <<UQ>>
+  Complaints : TEXT
+  Diagnosis : TEXT
+  Recommendations : TEXT
+}
+
+entity "Document" as Document {
+  * Id : UUID <<PK>>
+  --
+  * ResultId : UUID <<FK>>
+  * Url : VARCHAR
+}
+
+entity "AuditLog" as AuditLog {
+  * Id : UUID <<PK>>
+  --
+  AccountId : UUID <<FK>>
+  * Action : VARCHAR
+  EntityName : VARCHAR
+  EntityId : UUID
+  * Timestamp : TIMESTAMP
+}
+
+Account ||--o| Patient : "1:1"
+Account ||--o| Doctor : "1:1"
+Account ||--o| Administrator : "1:1"
+
+Photo |o--o| Account : "1:1 (nullable)"
+Photo |o--o| Office : "1:1 (nullable)"
+
+Office ||--o{ Doctor : "1:M"
+Office ||--o{ Administrator : "1:M"
+
+Specialization ||--o{ Doctor : "1:M"
+Specialization ||--o{ Service : "1:M"
+ServiceCategory ||--o{ Service : "1:M"
+
+Doctor ||--o{ Appointment : "1:M"
+Patient ||--o{ Appointment : "1:M"
+Service ||--o{ Appointment : "1:M"
+
+Appointment ||--o| Result : "1:1"
+Result ||--o{ Document : "1:M"
+
+Account |o--o{ AuditLog : "1:M (nullable AccountId)"
+
+@enduml

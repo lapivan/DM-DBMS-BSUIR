@@ -16,157 +16,157 @@
 * Авторизация и аутентификация пользователей (пациентов, врачей, администраторов).
 * Управление пользователями: CRUD-операции для профилей врачей, регистраторов и пациентов.
 * Система ролей (Admin, Doctor, Patient) с разграничением прав доступа.
-* Журналирование действий пользователя (AuditLog): логирование создания записей, изменения расписания, обновления профилей.
+* Журналирование действий пользователя (`audit_log`): логирование создания записей, изменения расписания, обновления профилей.
 * Просмотр списка врачей и услуг, фильтрация по специализациям и отделениям.
 * Бронирование, подтверждение и отмена медицинского приема.
-* Внесение результатов осмотра и прикрепление электронных документов (PDF анализов).
+* Внесение результатов осмотра.
 
 # Абстракции предметной области
 
-## Сущность "Аккаунт" (Account)
+## Сущность "Аккаунт" (`account`)
 Базовые данные для входа в систему, общая персональная информация и управление статусом активности пользователя.
 
 | Поле | Тип | Ограничения | Описание |
 | --- | --- | --- | --- |
-| Id | UUID | Primary Key | Идентификатор аккаунта |
-| Email | VARCHAR(256) | Unique, Not Null | Электронная почта для входа и уведомлений |
-| PasswordHash | VARCHAR(256) | Not Null | Хэш пароля пользователя |
-| PhoneNumber | VARCHAR(20) | Unique | Контактный номер телефона |
-| Firstname | VARCHAR(50) | Not Null | Имя пользователя |
-| Lastname | VARCHAR(50) | Not Null | Фамилия пользователя |
-| Birthday | DATE | Not Null | Дата рождения |
-| Role | INT | Not Null | Системная роль (0 - Patient, 1 - Doctor, 2 - Admin) |
-| PhotoId | UUID | Foreign Key, Null (ON DELETE RESTRICT) | Ссылка на фотографию профиля (таблица Photo) |
-| IsActive | BOOL | Default True | Флаг активности (Soft Delete) для всего аккаунта |
+| id | UUID | Primary Key | Идентификатор аккаунта |
+| email | VARCHAR(256) | Unique, Not Null | Электронная почта для входа и уведомлений |
+| password_hash | VARCHAR(256) | Not Null | Хэш пароля пользователя |
+| phone_number | VARCHAR(20) | Unique | Контактный номер телефона |
+| firstname | VARCHAR(50) | Not Null | Имя пользователя |
+| lastname | VARCHAR(50) | Not Null | Фамилия пользователя |
+| birthday | DATE | Not Null | Дата рождения |
+| role | INT | Not Null | Системная роль (0 - Patient, 1 - Doctor, 2 - Admin) |
+| photo_id | UUID | Foreign Key, Null (ON DELETE RESTRICT) | Ссылка на фотографию профиля (таблица `photo`) |
+| is_active | BOOL | Default True | Флаг активности (Soft Delete) для всего аккаунта |
 
-## Сущность "Пациент" (Patient)
+## Сущность "Пациент" (`patient`)
 Профиль пациента клиники.
 
 | Поле | Тип | Ограничения | Описание |
 | --- | --- | --- | --- |
-| Id | UUID | Primary Key | Идентификатор профиля пациента |
-| AccountId | UUID | Foreign Key, Unique, Not Null (ON DELETE CASCADE) | Ссылка на базовый аккаунт (связь 1:1) |
+| id | UUID | Primary Key | Идентификатор профиля пациента |
+| account_id | UUID | Foreign Key, Unique, Not Null (ON DELETE CASCADE) | Ссылка на базовый аккаунт (связь 1:1) |
 
-## Сущность "Врач" (Doctor)
+## Сущность "Врач" (`doctor`)
 Профиль медицинского специалиста.
 
 | Поле | Тип | Ограничения | Описание |
 | --- | --- | --- | --- |
-| Id | UUID | Primary Key | Идентификатор профиля врача |
-| AccountId | UUID | Foreign Key, Unique, Not Null (ON DELETE RESTRICT) | Ссылка на базовый аккаунт (связь 1:1) |
-| SpecializationId | UUID | Foreign Key, Not Null (ON DELETE RESTRICT) | Ссылка на специализацию (таблица Specialization) |
-| OfficeId | UUID | Foreign Key, Not Null (ON DELETE RESTRICT) | Ссылка на отделение (таблица Office) |
-| CareerStartDate | DATE | Not Null | Дата начала карьеры для расчета стажа |
-| GapInMonths | SMALLINT | Not Null | Перерыв в стаже в месяцах |
-| Degree | VARCHAR(30) | Null | Ученая степень или должность |
+| id | UUID | Primary Key | Идентификатор профиля врача |
+| account_id | UUID | Foreign Key, Unique, Not Null (ON DELETE RESTRICT) | Ссылка на базовый аккаунт (связь 1:1) |
+| specialization_id | UUID | Foreign Key, Not Null (ON DELETE RESTRICT) | Ссылка на специализацию (таблица `specialization`) |
+| office_id | UUID | Foreign Key, Not Null (ON DELETE RESTRICT) | Ссылка на отделение (таблица `office`) |
+| career_start_date | DATE | Not Null | Дата начала карьеры для расчета стажа |
+| gap_in_months | SMALLINT | Not Null | Перерыв в стаже в месяцах |
+| degree | VARCHAR(30) | Null | Ученая степень или должность |
 
-## Сущность "Администратор" (Administrator)
+## Сущность "Администратор" (`administrator`)
 Профиль сотрудника регистратуры/администратора.
 
 | Поле | Тип | Ограничения | Описание |
 | --- | --- | --- | --- |
-| Id | UUID | Primary Key | Идентификатор профиля администратора |
-| AccountId | UUID | Foreign Key, Unique, Not Null (ON DELETE RESTRICT) | Ссылка на базовый аккаунт (связь 1:1) |
-| OfficeId | UUID | Foreign Key, Not Null (ON DELETE RESTRICT) | Ссылка на отделение (таблица Office) |
-| CareerStartDate | DATE | Not Null | Дата начала работы |
-| GapInMonths | SMALLINT | Not Null | Перерыв в стаже в месяцах |
+| id | UUID | Primary Key | Идентификатор профиля администратора |
+| account_id | UUID | Foreign Key, Unique, Not Null (ON DELETE RESTRICT) | Ссылка на базовый аккаунт (связь 1:1) |
+| office_id | UUID | Foreign Key, Not Null (ON DELETE RESTRICT) | Ссылка на отделение (таблица `office`) |
+| career_start_date | DATE | Not Null | Дата начала работы |
+| gap_in_months | SMALLINT | Not Null | Перерыв в стаже в месяцах |
 
-## Сущность "Отделение" (Office)
+## Сущность "Отделение" (`office`)
 Филиал или офис клиники.
 
 | Поле | Тип | Ограничения | Описание |
 | --- | --- | --- | --- |
-| Id | UUID | Primary Key | Идентификатор отделения |
-| Address | VARCHAR(256) | Not Null | Физический адрес филиала |
-| PhoneNumber | VARCHAR(20) | Unique | Контактный телефон регистратуры |
-| PhotoId | UUID | Foreign Key, Null (ON DELETE RESTRICT) | Ссылка на фотографию отделения |
+| id | UUID | Primary Key | Идентификатор отделения |
+| address | VARCHAR(256) | Not Null | Физический адрес филиала |
+| phone_number | VARCHAR(20) | Unique | Контактный телефон регистратуры |
+| photo_id | UUID | Foreign Key, Null (ON DELETE RESTRICT) | Ссылка на фотографию отделения |
 
-## Сущность "Фотография" (Photo)
+## Сущность "Фотография" (`photo`)
 Медиа-файл профиля или отделения.
 
 | Поле | Тип | Ограничения | Описание |
 | --- | --- | --- | --- |
-| Id | UUID | Primary Key | Идентификатор фотографии |
-| Url | VARCHAR(500) | Not Null | Ссылка на хранилище файла (S3 или локальное) |
+| id | UUID | Primary Key | Идентификатор фотографии |
+| url | VARCHAR(500) | Not Null | Ссылка на хранилище файла (S3 или локальное) |
 
-## Сущность "Специализация" (Specialization)
+## Сущность "Специализация" (`specialization`)
 Медицинское направление (например, Терапевт, Хирург).
 
 | Поле | Тип | Ограничения | Описание |
 | --- | --- | --- | --- |
-| Id | UUID | Primary Key | Идентификатор специализации |
-| Name | VARCHAR(50) | Unique, Not Null | Название направления |
+| id | UUID | Primary Key | Идентификатор специализации |
+| name | VARCHAR(50) | Unique, Not Null | Название направления |
 
-## Сущность "Категория услуги" (ServiceCategory)
+## Сущность "Категория услуги" (`service_category`)
 Группировка медицинских услуг.
 
 | Поле | Тип | Ограничения | Описание |
 | --- | --- | --- | --- |
-| Id | UUID | Primary Key | Идентификатор категории |
-| Name | VARCHAR(100) | Unique, Not Null | Название категории |
-| Duration | INTERVAL | Not Null | Базовая длительность услуг в данной категории |
+| id | UUID | Primary Key | Идентификатор категории |
+| name | VARCHAR(100) | Unique, Not Null | Название категории |
+| duration | INTERVAL | Not Null | Базовая длительность услуг в данной категории |
 
-## Сущность "Услуга" (Service)
+## Сущность "Услуга" (`service`)
 Конкретная медицинская процедура или консультация.
 
 | Поле | Тип | Ограничения | Описание |
 | --- | --- | --- | --- |
-| Id | UUID | Primary Key | Идентификатор услуги |
-| SpecializationId | UUID | Foreign Key, Not Null | Ссылка на специализацию |
-| ServiceCategoryId | UUID | Foreign Key, Not Null (ON DELETE RESTRICT) | Ссылка на категорию услуги |
-| Name | VARCHAR(100) | Unique, Not Null | Наименование услуги |
-| Price | NUMERIC(18, 2) | Not Null | Стоимость оказания услуги |
-| IsActive | BOOL | Default True | Доступна ли услуга для записи |
+| id | UUID | Primary Key | Идентификатор услуги |
+| specialization_id | UUID | Foreign Key, Not Null | Ссылка на специализацию |
+| service_category_id | UUID | Foreign Key, Not Null (ON DELETE RESTRICT) | Ссылка на категорию услуги |
+| name | VARCHAR(100) | Unique, Not Null | Наименование услуги |
+| price | NUMERIC(18, 2) | Not Null | Стоимость оказания услуги |
+| is_active | BOOL | Default True | Доступна ли услуга для записи |
 
-## Сущность "Расписание" (Schedule)
+## Сущность "Расписание" (`schedule`)
 Рабочие смены/слоты доступности врачей.
 
 | Поле | Тип | Ограничения | Описание |
 | --- | --- | --- | --- |
-| Id | UUID | Primary Key | Идентификатор записи в расписании |
-| DoctorId | UUID | Foreign Key, Not Null | Врач, к которому относится расписание |
-| Date | DATE | Not Null | Дата рабочей смены |
-| StartTime | TIME | Not Null | Время начала работы |
-| EndTime | TIME | Not Null | Время окончания работы |
+| id | UUID | Primary Key | Идентификатор записи в расписании |
+| doctor_id | UUID | Foreign Key, Not Null | Врач, к которому относится расписание |
+| date | DATE | Not Null | Дата рабочей смены |
+| start_time | TIME | Not Null | Время начала работы |
+| end_time | TIME | Not Null | Время окончания работы |
 
-## Сущность "Прием" (Appointment)
+## Сущность "Прием" (`appointment`)
 Запись пациента к врачу. Реализует связь M:M между Врачами и Пациентами.
 
 | Поле | Тип | Ограничения | Описание |
 | --- | --- | --- | --- |
-| Id | UUID | Primary Key | Идентификатор записи на прием |
-| DoctorId | UUID | Foreign Key, Not Null | Лечащий врач |
-| PatientId | UUID | Foreign Key, Not Null | Записанный пациент |
-| ServiceId | UUID | Foreign Key, Not Null | Оказываемая услуга |
-| Date | DATE | Not Null | Дата проведения приема |
-| Time | TIME | Not Null | Время начала приема |
-| IsApproved | BOOL | Default False | Статус подтверждения приема администратором |
+| id | UUID | Primary Key | Идентификатор записи на прием |
+| doctor_id | UUID | Foreign Key, Not Null | Лечащий врач |
+| patient_id | UUID | Foreign Key, Not Null | Записанный пациент |
+| service_id | UUID | Foreign Key, Not Null | Оказываемая услуга |
+| date | DATE | Not Null | Дата проведения приема |
+| time | TIME | Not Null | Время начала приема |
+| is_approved | BOOL | Default False | Статус подтверждения приема администратором |
 
-## Сущность "Результат обследования" (Result)
+## Сущность "Результат обследования" (`result`)
 Медицинское заключение по итогам приема с возможностью прикрепления документа.
 
 | Поле | Тип | Ограничения | Описание |
 | --- | --- | --- | --- |
-| Id | UUID | Primary Key | Идентификатор медицинского заключения |
-| AppointmentId | UUID | Foreign Key, Unique, Not Null | Ссылка на проведенный прием (связь 1:1) |
-| Complaints | TEXT | Null | Жалобы пациента |
-| Diagnosis | TEXT | Null | Поставленный диагноз |
-| Recommendations | TEXT | Null | Рекомендации и назначения |
+| id | UUID | Primary Key | Идентификатор медицинского заключения |
+| appointment_id | UUID | Foreign Key, Unique, Not Null | Ссылка на проведенный прием (связь 1:1) |
+| complaints | TEXT | Null | Жалобы пациента |
+| diagnosis | TEXT | Null | Поставленный диагноз |
+| recommendations | TEXT | Null | Рекомендации и назначения |
 
-## Сущность "Журнал действий" (AuditLog)
+## Сущность "Журнал действий" (`audit_log`)
 Логирование критических системных и пользовательских событий.
 
 | Поле | Тип | Ограничения | Описание |
 | --- | --- | --- | --- |
-| Id | UUID | Primary Key | Идентификатор записи лога |
-| AccountId | UUID | Foreign Key, Null | Пользователь, совершивший действие (Null для системы) |
-| Action | VARCHAR(100) | Not Null | Тип операции (например, CREATE_APPOINTMENT) |
-| EntityName | VARCHAR(100) | Null | Затронутая таблица/сущность |
-| EntityId | UUID | Null | Идентификатор измененной записи |
-| Timestamp | TIMESTAMP | Not Null | Точное время фиксации события |
+| id | UUID | Primary Key | Идентификатор записи лога |
+| account_id | UUID | Foreign Key, Null | Пользователь, совершивший действие (Null для системы) |
+| action | VARCHAR(100) | Not Null | Тип операции (например, CREATE_APPOINTMENT) |
+| entity_name | VARCHAR(100) | Null | Затронутая таблица/сущность |
+| entity_id | UUID | Null | Идентификатор измененной записи |
+| timestamp | TIMESTAMP | Not Null | Точное время фиксации события |
 
 # Описание связей БД
 В спроектированной схеме базы данных присутствуют все виды реляционных связей:
-* **Один-к-Одному (1:1):** `Account` ↔ `Patient`, `Account` ↔ `Doctor`, `Account` ↔ `Administrator`, `Account` ↔ `Photo`, `Office` ↔ `Photo`, `Appointment` ↔ `Result`.
-* **Один-ко-Многим (1:M):** `Office` ↔ `Doctor`, `Office` ↔ `Administrator`, `Specialization` ↔ `Doctor`, `Specialization` ↔ `Service`, `ServiceCategory` ↔ `Service`, `Doctor` ↔ `Schedule`, `Account` ↔ `AuditLog`.
-* **Многие-ко-Многим (M:M):** Связь между `Patient` и `Doctor` реализована через промежуточную сущность `Appointment`. Данная таблица является самостоятельной сущностью, так как несет в себе дополнительную смысловую нагрузку (Дата, Время, Услуга, Статус), что удовлетворяет требованиям к проектированию.
+* **Один-к-Одному (1:1):** `account` ↔ `patient`, `account` ↔ `doctor`, `account` ↔ `administrator`, `account` ↔ `photo`, `office` ↔ `photo`, `appointment` ↔ `result`.
+* **Один-ко-Многим (1:M):** `office` ↔ `doctor`, `office` ↔ `administrator`, `specialization` ↔ `doctor`, `specialization` ↔ `service`, `service_category` ↔ `service`, `doctor` ↔ `schedule`, `account` ↔ `audit_log`.
+* **Многие-ко-Многим (M:M):** Связь между `patient` и `doctor` реализована через промежуточную сущность `appointment`. Данная таблица является самостоятельной сущностью, так как несет в себе дополнительную смысловую нагрузку (Дата, Время, Услуга, Статус), что удовлетворяет требованиям к проектированию.

@@ -10,144 +10,144 @@ skinparam class {
     HeaderBackgroundColor #ECF0F1
 }
 
-entity "Account" as Account {
-  * Id : UUID <<PK>>
+entity "account" as account {
+  * id : UUID <<PK>>
   --
-  * Email : VARCHAR(256) <<UQ>>
-  * PasswordHash : VARCHAR(256)
-  PhoneNumber : VARCHAR(20) <<UQ>>
-  * Firstname : VARCHAR(50)
-  * Lastname : VARCHAR(50)
-  * Birthday : DATE
-  * Role : INT
-  PhotoId : UUID <<FK>>
-  * IsActive : BOOL
+  * email : VARCHAR(256) <<UQ>>
+  * password_hash : VARCHAR(256)
+  phone_number : VARCHAR(20) <<UQ>>
+  * firstname : VARCHAR(50)
+  * lastname : VARCHAR(50)
+  * birthday : DATE
+  * role : INT
+  photo_id : UUID <<FK>>
+  * is_active : BOOL
 }
 
-entity "Patient" as Patient {
-  * Id : UUID <<PK>>
+entity "patient" as patient {
+  * id : UUID <<PK>>
   --
-  * AccountId : UUID <<FK>> <<UQ>>
+  * account_id : UUID <<FK>> <<UQ>>
 }
 
-entity "Doctor" as Doctor {
-  * Id : UUID <<PK>>
+entity "doctor" as doctor {
+  * id : UUID <<PK>>
   --
-  * AccountId : UUID <<FK>> <<UQ>>
-  * SpecializationId : UUID <<FK>>
-  * OfficeId : UUID <<FK>>
-  * CareerStartDate : DATE
-  * GapInMonths : SMALLINT
-  Degree : VARCHAR(30)
+  * account_id : UUID <<FK>> <<UQ>>
+  * specialization_id : UUID <<FK>>
+  * office_id : UUID <<FK>>
+  * career_start_date : DATE
+  * gap_in_months : SMALLINT
+  degree : VARCHAR(30)
 }
 
-entity "Administrator" as Administrator {
-  * Id : UUID <<PK>>
+entity "administrator" as administrator {
+  * id : UUID <<PK>>
   --
-  * AccountId : UUID <<FK>> <<UQ>>
-  * OfficeId : UUID <<FK>>
-  * CareerStartDate : DATE
-  * GapInMonths : SMALLINT
+  * account_id : UUID <<FK>> <<UQ>>
+  * office_id : UUID <<FK>>
+  * career_start_date : DATE
+  * gap_in_months : SMALLINT
 }
 
-entity "Office" as Office {
-  * Id : UUID <<PK>>
+entity "office" as office {
+  * id : UUID <<PK>>
   --
-  * Address : VARCHAR(256)
-  PhoneNumber : VARCHAR(20) <<UQ>>
-  PhotoId : UUID <<FK>>
+  * address : VARCHAR(256)
+  phone_number : VARCHAR(20) <<UQ>>
+  photo_id : UUID <<FK>>
 }
 
-entity "Photo" as Photo {
-  * Id : UUID <<PK>>
+entity "photo" as photo {
+  * id : UUID <<PK>>
   --
-  * Url : VARCHAR(500)
+  * url : VARCHAR(500)
 }
 
-entity "Specialization" as Specialization {
-  * Id : UUID <<PK>>
+entity "specialization" as specialization {
+  * id : UUID <<PK>>
   --
-  * Name : VARCHAR(50) <<UQ>>
+  * name : VARCHAR(50) <<UQ>>
 }
 
-entity "ServiceCategory" as ServiceCategory {
-  * Id : UUID <<PK>>
+entity "service_category" as service_category {
+  * id : UUID <<PK>>
   --
-  * Name : VARCHAR(100) <<UQ>>
-  * Duration : INTERVAL
+  * name : VARCHAR(100) <<UQ>>
+  * duration : INTERVAL
 }
 
-entity "Service" as Service {
-  * Id : UUID <<PK>>
+entity "service" as service {
+  * id : UUID <<PK>>
   --
-  * SpecializationId : UUID <<FK>>
-  * ServiceCategoryId : UUID <<FK>>
-  * Name : VARCHAR(100) <<UQ>>
-  * Price : NUMERIC(18, 2)
-  * IsActive : BOOL
+  * specialization_id : UUID <<FK>>
+  * service_category_id : UUID <<FK>>
+  * name : VARCHAR(100) <<UQ>>
+  * price : NUMERIC(18, 2)
+  * is_active : BOOL
 }
 
-entity "Schedule" as Schedule {
-  * Id : UUID <<PK>>
+entity "schedule" as schedule {
+  * id : UUID <<PK>>
   --
-  * DoctorId : UUID <<FK>>
-  * Date : DATE
-  * StartTime : TIME
-  * EndTime : TIME
+  * doctor_id : UUID <<FK>>
+  * date : DATE
+  * start_time : TIME
+  * end_time : TIME
 }
 
-entity "Appointment" as Appointment {
-  * Id : UUID <<PK>>
+entity "appointment" as appointment {
+  * id : UUID <<PK>>
   --
-  * DoctorId : UUID <<FK>>
-  * PatientId : UUID <<FK>>
-  * ServiceId : UUID <<FK>>
-  * Date : DATE
-  * Time : TIME
-  * IsApproved : BOOL
+  * doctor_id : UUID <<FK>>
+  * patient_id : UUID <<FK>>
+  * service_id : UUID <<FK>>
+  * date : DATE
+  * time : TIME
+  * is_approved : BOOL
 }
 
-entity "Result" as Result {
-  * Id : UUID <<PK>>
+entity "result" as result {
+  * id : UUID <<PK>>
   --
-  * AppointmentId : UUID <<FK>> <<UQ>>
-  Complaints : TEXT
-  Diagnosis : TEXT
-  Recommendations : TEXT
+  * appointment_id : UUID <<FK>> <<UQ>>
+  complaints : TEXT
+  diagnosis : TEXT
+  recommendations : TEXT
 }
 
-entity "AuditLog" as AuditLog {
-  * Id : UUID <<PK>>
+entity "audit_log" as audit_log {
+  * id : UUID <<PK>>
   --
-  AccountId : UUID <<FK>>
-  * Action : VARCHAR(100)
-  EntityName : VARCHAR(100)
-  EntityId : UUID
-  * Timestamp : TIMESTAMP
+  account_id : UUID <<FK>>
+  * action : VARCHAR(100)
+  entity_name : VARCHAR(100)
+  entity_id : UUID
+  * timestamp : TIMESTAMP
 }
 
-Account ||--o| Patient : "1:1"
-Account ||--o| Doctor : "1:1"
-Account ||--o| Administrator : "1:1"
+account ||--o| patient : "1:1"
+account ||--o| doctor : "1:1"
+account ||--o| administrator : "1:1"
 
-Photo |o--o| Account : "1:1 (nullable)"
-Photo |o--o| Office : "1:1 (nullable)"
+photo |o--o| account : "1:1 (nullable)"
+photo |o--o| office : "1:1 (nullable)"
 
-Office ||--o{ Doctor : "1:M"
-Office ||--o{ Administrator : "1:M"
+office ||--o{ doctor : "1:M"
+office ||--o{ administrator : "1:M"
 
-Specialization ||--o{ Doctor : "1:M"
-Specialization ||--o{ Service : "1:M"
-ServiceCategory ||--o{ Service : "1:M"
+specialization ||--o{ doctor : "1:M"
+specialization ||--o{ service : "1:M"
+service_category ||--o{ service : "1:M"
 
-Doctor ||--o{ Schedule : "1:M"
+doctor ||--o{ schedule : "1:M"
 
-Doctor ||--o{ Appointment : "1:M"
-Patient ||--o{ Appointment : "1:M"
-Service ||--o{ Appointment : "1:M"
+doctor ||--o{ appointment : "1:M"
+patient ||--o{ appointment : "1:M"
+service ||--o{ appointment : "1:M"
 
-Appointment ||--o| Result : "1:1"
+appointment ||--o| result : "1:1"
 
-Account |o--o{ AuditLog : "1:M (nullable AccountId)"
+account |o--o{ audit_log : "1:M (nullable account_id)"
 
 @enduml
